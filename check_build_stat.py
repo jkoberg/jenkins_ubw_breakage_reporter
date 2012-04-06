@@ -1,3 +1,13 @@
+import pythoncom
+import win32serviceutil
+import win32service
+import win32event
+import servicemanager
+import socket
+
+
+
+
 import urllib2, json, time
 
 #import feedparser
@@ -28,19 +38,43 @@ def check_if_failed(jobname):
 
 import ubw_driver
 
-def main():
-  with ubw_driver.UBW('COM8') as ubw:
-    ubw.set_to_output('A0')
-    while True:
-      for job in get_monitored_job_names():
-        if check_if_failed(job):
-          print "Detected failure on " + job
-          ubw.turn_on('A0')
-        else:
-          ubw.turn_off('A0')
-      time.sleep(120)
+
+class AppServerSvc (win32serviceutil.ServiceFramework):
+    _svc_name_ = "TestService"
+    _svc_display_name_ = "Test Service"
+
+    def __init__(self,args):
+        self.stop = False
+        win32serviceutil.ServiceFramework.__init__(self,args)
+        self.hWaitStop = win32event.CreateEvent(None,0,0,None)
+        socket.setdefaulttimeout(60)
+
+    def SvcStop(self):
+        self.stop = True
+        self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+        win32event.SetEvent(self.hWaitStop)
+
+    def SvcDoRun(self):
+        servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
+                              servicemanager.PYS_SERVICE_STARTED,
+                              (self._svc_name_,''))
+        self.main()
+
+    def main(self):
+        with ubw_driver.UBW('COM8') as ubw:
+          ubw.set_to_output('A0')
+          while True:
+            for job in get_monitored_job_names():
+              if check_if_failed(job):
+                print "Detected failure on " + job
+                ubw.turn_on('A0')
+              else:
+                ubw.turn_off('A0')
+            time.sleep(120)
+              
+        
+
+if __name__ == '__main__':
+    win32serviceutil.HandleCommandLine(AppServerSvc)
     
-    
-if __name__ == "__main__":
-  main()
-  
+
