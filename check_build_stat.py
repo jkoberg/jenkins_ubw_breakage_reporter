@@ -40,8 +40,8 @@ import ubw_driver
 
 
 class AppServerSvc (win32serviceutil.ServiceFramework):
-    _svc_name_ = "TestService"
-    _svc_display_name_ = "Test Service"
+    _svc_name_ = "V1_Build_Status_Check"
+    _svc_display_name_ = "VersionOne Build Status Checker"
 
     def __init__(self,args):
         self.stop = False
@@ -64,6 +64,8 @@ class AppServerSvc (win32serviceutil.ServiceFramework):
         with ubw_driver.UBW('COM8') as ubw:
           ubw.set_to_output('A0')
           while True:
+            if self.stop:
+              break
             for job in get_monitored_job_names():
               if check_if_failed(job):
                 print "Detected failure on " + job
