@@ -31,8 +31,8 @@ def get_monitored_job_names(apiurl="http://ci-server/view/monitoredBuilds/api/js
 def check_if_failed(jobname):
   run_success = get_json(last_success_url % jobname)
   run_fail = get_json(last_fail_url % jobname)  
-  if run_fail['timestamp'] > run_success['timestamp']:
-    return true
+  if run_fal['timestamp'] > run_success['timestamp']:
+    return True
 
 
 
