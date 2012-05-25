@@ -102,7 +102,7 @@ def UBW(port):
 
 
 def main():
-  with UBW('COM8') as ubw:
+  with UBW('COM7') as ubw:
     ubw.set_to_output('A0')
     while True:
       ubw.turn_on('A0')
